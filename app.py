@@ -23,9 +23,9 @@ def get_restaurants():
     radius = radius if radius in VALID_RADII else DEFAULT_RADIUS
 
     # create key from latitude and longitude
-    x = int((90 - float(latitude)) * 100) * 100000
-    y = int((180 + float(longitude)) * 100)
-    key = str(x + y)
+    x = int((90 - float(latitude)) * 100) * 10000000000
+    y = int((180 + float(longitude)) * 100) * 100000
+    key = str(x + y + radius)
 
     # query database
     results = ref.child(key).get()
@@ -47,7 +47,12 @@ def get_restaurants():
             restaurants.extend(get_next_page(page_token=next_page_token))
 
         # save restaurants in database
-        ref.child(key).set({'location': location, 'restaurants': restaurants, 'timestamp': {'.sv': 'timestamp'}})
+        ref.child(key).set({
+            'location': location,
+            'radius': radius,
+            'restaurants': restaurants,
+            'timestamp': {'.sv': 'timestamp'}
+        })
 
     # return restaurants
     return jsonify({'restaurants': restaurants})
@@ -71,7 +76,7 @@ def get_next_page(page_token):
 
 SECONDS_IN_WEEK = 604800
 
-VALID_RADII = [1000, 2000, 5000, 10000, 20000]
+VALID_RADII = [1000, 2500, 5000, 10000, 20000]
 DEFAULT_RADIUS = 5000
 
 if 'GOOGLE_MAPS_API_KEY' in os.environ:
